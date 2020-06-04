@@ -1,0 +1,32 @@
+-----------------------------------Parameters-----------------------------------
+>>> model: racl
+>>> task: res15
+>>> batch_size: 8
+>>> learning_rate: 0.0001
+>>> global_dim: 300
+>>> domain_dim: 100
+>>> kp1: 0.5
+>>> kp2: 0.5
+>>> reg_scale: 1e-05
+>>> filter_num: 256
+>>> class_num: 3
+>>> load: 1
+>>> max_sentence_len: 70
+>>> n_iter: 120
+>>> kernel_size: 5
+>>> hop_num: 4
+>>> warmup_iter: 100
+>>> emb_dim: 400
+>>> data_path: data/res15/
+>>> train_path: data/res15/train/
+>>> test_path: data/res15/test/
+>>> dev_path: data/res15/dev/
+
+
+>>> total parameter: 8337332
+
+--------------------------------Mission Complete--------------------------------
+Dev Max Metrics Index: 0
+aspect f1=0.7176, opinion f1=0.7674, sentiment acc==0.8535, sentiment f1==0.6774, ABSA f1==0.6120,
+Dev Min Loss Index: 0
+aspect f1=0.7176, opinion f1=0.7674, sentiment acc==0.8535, sentiment f1==0.6774, ABSA f1==0.6120,

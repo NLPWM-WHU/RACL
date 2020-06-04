@@ -1,0 +1,32 @@
+-----------------------------------Parameters-----------------------------------
+>>> model: racl
+>>> task: lap14
+>>> batch_size: 8
+>>> learning_rate: 0.0001
+>>> global_dim: 300
+>>> domain_dim: 100
+>>> kp1: 0.5
+>>> kp2: 0.5
+>>> reg_scale: 1e-05
+>>> filter_num: 256
+>>> class_num: 3
+>>> load: 1
+>>> max_sentence_len: 85
+>>> n_iter: 80
+>>> kernel_size: 3
+>>> hop_num: 3
+>>> warmup_iter: 60
+>>> emb_dim: 400
+>>> data_path: data/lap14/
+>>> train_path: data/lap14/train/
+>>> test_path: data/lap14/test/
+>>> dev_path: data/lap14/dev/
+
+
+>>> total parameter: 3803243
+
+--------------------------------Mission Complete--------------------------------
+Dev Max Metrics Index: 0
+aspect f1=0.8281, opinion f1=0.7791, sentiment acc==0.7588, sentiment f1==0.7304, ABSA f1==0.6259,
+Dev Min Loss Index: 0
+aspect f1=0.8281, opinion f1=0.7791, sentiment acc==0.7588, sentiment f1==0.7304, ABSA f1==0.6259,
