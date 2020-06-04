@@ -2,7 +2,7 @@
  Code and datasets of our paper "Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis" accepted by ACL 2020.
 
 ## 1.Requirements
- To reproduce the reported results accurately, install the specific version of each package.
+ To reproduce the reported results accurately, please install the specific version of each package.
 
 * python 3.6.10
 * tensorflow-gpu 1.5.0
