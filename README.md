@@ -59,7 +59,7 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 1
  We haven't yet integrated the BERT-based version at present. Since we create a separate project for RACL-BERT, it takes time to merge it to this repo. We may update it in late July. 
 
 ## 6. Need Better Results?
-If you still need a better performance of RACL, you can increase the $hop_num$ argument in **train_racl.py**. Stacking layers to 5~6 can introduce 1~2% absolute improvements on ABSA-F1.
+If you still need a better performance of RACL, you can increase the $hop_num$ argument in **train_racl.py**. Stacking layers to 5\~6 can introduce 1\~2% absolute improvements on ABSA-F1.
 
 ## 7. Citation
  Wait for publication. 
