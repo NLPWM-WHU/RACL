@@ -27,6 +27,8 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 0
  | round5 | 85\.68  | 85\.42  | 74\.56  | 70\.96   |
  | **AVG**    | **85\.37**  | **85\.32**  | **74\.46**  | **70\.67**   |
 
+ We haven't yet integrated the BERT-based version at present. Since we create a separate project for RACL-BERT, it takes time to merge it to this repo. We may update it in late July. 
+
 ## 3. Checkpoints
  If you have problems in training RACL, you can also use the released pre-trained weights on the following links.
 
@@ -55,12 +57,9 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 1
 * Specify the task (i.e., Res14) in **embedding.py**, then run it.
 * Word embeddings will be generated in the corresponding folder, e.g., **./data/res14/glove_embedding.npy**.
 
-## 5. RACL-BERT
- We haven't yet integrated the BERT-based version at present. Since we create a separate project for RACL-BERT, it takes time to merge it to this repo. We may update it in late July. 
-
-## 6. Need Better Results?
+## 5. Need Better Results?
 If you still need a better performance of RACL, you can increase the $hop_num$ argument in **train_racl.py**. Stacking layers to 5\~6 can introduce 1\~2% absolute improvements on ABSA-F1.
 
-## 7. Citation
+## 6. Citation
  Wait for publication. 
  We will update the information in time. :checkered_flag:
