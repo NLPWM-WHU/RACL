@@ -61,7 +61,7 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 1
 If you still need a better performance of RACL, you can increase the $hop_num$ argument in **train_racl.py**. Stacking layers to 5\~6 can introduce 1\~2% absolute improvements on ABSA-F1.
 
 ## 6. Citation
-If you find our code and dataset useful, please cite our paper.
+If you find our code and datasets useful, please cite our paper.
 
   
 ```
