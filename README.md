@@ -61,5 +61,16 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 1
 If you still need a better performance of RACL, you can increase the $hop_num$ argument in **train_racl.py**. Stacking layers to 5\~6 can introduce 1\~2% absolute improvements on ABSA-F1.
 
 ## 6. Citation
- Wait for publication. 
- We will update the information in time. :checkered_flag:
+If you find our code and dataset useful, please cite our paper.
+
+  
+```
+@inproceedings{chen2020racl,
+  author    = {Zhuang Chen and Tieyun Qian},
+  title     = {Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis},
+  booktitle = {ACL},
+  year      = {2020},
+}
+```
+
+ We will update the page information in time. :checkered_flag:
