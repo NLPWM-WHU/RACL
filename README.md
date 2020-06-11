@@ -1,5 +1,5 @@
 # RACL
- Code and datasets of our paper "Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis" accepted by ACL 2020.
+ Code and datasets of our paper "[Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis](https://github.com/NLPWM-WHU/RACL/blob/master/RACL_paper.pdf)" accepted by ACL 2020.
 
 ## 1. Requirements
  To reproduce the reported results accurately, please install the specific version of each package.
