@@ -61,9 +61,9 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 1
 A separate set consists of four files:
 
 * **sentence.txt** contains the tokenized review sentences.
-* **target.txt** are the aspect term tag sequences. **0=O, 1=B, 2=I**.
-* **opnion.txt** are the opinion term tag sequences. **0=O, 1=B, 2=I**.
-* **target_polarity.txt** are the sentiment tag sequences. **0=background, 1=positive, 2=negative, 3=neutral, 4=conflict**.
+* **target.txt** contains the aspect term tag sequences. **0=O, 1=B, 2=I**.
+* **opnion.txt** contains the opinion term tag sequences. **0=O, 1=B, 2=I**.
+* **target_polarity.txt** contains the sentiment tag sequences. **0=background, 1=positive, 2=negative, 3=neutral, 4=conflict**.
 
 ## 6. Need Better Results?
 If you still need a better performance of RACL, you can increase the $hop_num$ argument in **train_racl.py**. Stacking layers to 5\~6 can introduce 1\~2% absolute improvements on ABSA-F1.
