@@ -50,7 +50,7 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 1
  | Res15   | 71\.76  | 76\.74  | 67\.74  | 61\.20   |
 
 ## 4. Embeddings
- We have generated the word-idx mapping file and the global-purpose and domain-specific embeddings in the **data** folder. If you want to generate them from scratch, follow the steps below.
+ We have generated the word-idx mapping file and the global-purpose & domain-specific embeddings in the **data** folder. If you want to generate them from scratch, follow the steps below.
 
 * Download [glove.840B.300d.txt](https://nlp.stanford.edu/projects/glove/), rename it to **glove_emb.txt**, and put it in the folder like **./data/res14**.
 * Download [domain-specific vectors](https://howardhsu.github.io/) proposed by DE-CNN, rename it to **domain_emb.txt**, and put it in the folder like **./data/res14**. Notice that **restaurant_emb.vec** is for datasets Res14 and Res15, and **laptop_emb.vec** is for Lap14.
