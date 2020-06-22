@@ -78,7 +78,7 @@ If you find our code and datasets useful, please cite our paper.
   author    = {Zhuang Chen and Tieyun Qian},
   title     = {Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis},
   booktitle = {ACL},
-  pages     = {3685--3694},
+  pages     = {3685-3694},
   year      = {2020},
   url       = {https://www.aclweb.org/anthology/2020.acl-main.340}
 }
