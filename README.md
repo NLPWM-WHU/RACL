@@ -1,5 +1,6 @@
 # RACL
- Code and datasets of our paper "[Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis](https://github.com/NLPWM-WHU/RACL/blob/master/RACL_paper.pdf)" accepted by ACL 2020. (You can also find the paper on [Google Drive](https://drive.google.com/file/d/11MnM4WmBDPXIVitqeAmFXKokDzJFADOj/view?usp=sharing) and [Baidu Cloud(passward:8d2z)](https://pan.baidu.com/s/1AR9M852MrZhao5n5V2nwzw).)
+ Code and datasets of our paper "[Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis](https://www.aclweb.org/anthology/2020.acl-main.340/)" accepted by ACL 2020.
+
 
 ## 1. Requirements
  To reproduce the reported results accurately, please install the specific version of each package.
@@ -77,8 +78,10 @@ If you find our code and datasets useful, please cite our paper.
   author    = {Zhuang Chen and Tieyun Qian},
   title     = {Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis},
   booktitle = {ACL},
-  year      = {2020}
+  pages     = {3685--3694},
+  year      = {2020},
+  url       = {https://www.aclweb.org/anthology/2020.acl-main.340}
 }
 ```
 
- We will update the page information in time. :checkered_flag: 
+:checkered_flag: 
