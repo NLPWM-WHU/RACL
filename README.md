@@ -73,7 +73,7 @@ We have updated the files for RACL-BERT. To run it, follow the steps below.
 
 * Upgrade the version of tensorflow-gpu to 1.12.0. (The lower version could deteriorate the performance.)
 * Download the [checkpoint](https://storage.googleapis.com/bert_models/2019_05_30/wwm_uncased_L-24_H-1024_A-16.zip) of BERT-Large, then unzip it in the folder **./bert-large/** (e.g., ./bert-large/bert_config.json).
-* Execute the command as below。
+* Execute the command as below.
 
 	```
 	CUDA_VISIBLE_DEVICES=0 python train_racl_bert.py --task res14 --load 0
