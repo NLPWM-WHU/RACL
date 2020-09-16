@@ -77,8 +77,6 @@ We have updated the files for RACL-BERT. To run it, follow the steps below.
 ```
 CUDA_VISIBLE_DEVICES=0 python train_racl_bert.py --task res14 --load 0
 ```
-.
-
 
  The results of RACL-BERT should be like this.
 
