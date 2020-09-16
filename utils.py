@@ -2,6 +2,7 @@ from collections import Counter
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras import backend as K
+import bert_tokenization
 
 def read_data(fname, source_word2idx, max_length, is_testing=False):
     source_data, aspect_y, opinion_y, source_mask, sentiment_y = list(), list(), list(), list(), list()
@@ -94,6 +95,145 @@ def read_data(fname, source_word2idx, max_length, is_testing=False):
            np.array(source_mask), \
            np.array(sentiment_mask), \
            np.array(position_m)
+
+def read_bert_data(fname, max_length, is_testing=False):
+    aspect_y, opinion_y, sentiment_y, source_mask, sentiment_mask = list(), list(), list(), list(), list()
+    bert_input, bert_mask, bert_segment = list(), list(), list()
+    position_m = list()
+
+    review = open(fname + r'sentence.txt', 'r', encoding='utf-8').readlines()
+    ae_data = open(fname + r'target.txt', 'r', encoding='utf-8').readlines()
+    oe_data = open(fname + r'opinion.txt', 'r', encoding='utf-8').readlines()
+    sa_data = open(fname + r'target_polarity.txt', 'r', encoding='utf-8').readlines()
+    vocab_file = "./bert-large/vocab.txt"
+    tokenizer = bert_tokenization.WordpieceTokenizer(vocab_file=vocab_file)
+
+    for index, _ in enumerate(review):
+        '''
+        Word Index
+        '''
+        raw_tokens = review[index].strip().split()
+        ae_labels = list(map(int, ae_data[index].strip().split()))
+        oe_labels = list(map(int, oe_data[index].strip().split()))
+        sa_labels = list(map(int, sa_data[index].strip().split()))
+
+        split_tokens = []
+        split_ae_labels = []
+        split_oe_labels = []
+        split_sa_labels = []
+
+        for ix, raw_token in enumerate(raw_tokens):
+            raw_token = raw_token.lower()
+            sub_tokens= tokenizer.tokenize(raw_token)
+            for jx, sub_token in enumerate(sub_tokens):
+                split_tokens.append(sub_token)
+                'For Aspect&Opinion Labels'
+                if ae_labels[ix]==1 and jx>0:
+                    split_ae_labels.append(2)
+                else:
+                    split_ae_labels.append(ae_labels[ix])
+
+                if oe_labels[ix]==1 and jx>0:
+                    split_oe_labels.append(2)
+                else:
+                    split_oe_labels.append(oe_labels[ix])
+
+                split_sa_labels.append(sa_labels[ix])
+
+        if len(split_tokens) > max_length - 2:
+            print('Over Length')
+            raise ValueError
+
+        source_mask.append([1.] * len(split_tokens) + [0.] * (max_length - len(split_tokens)))
+
+
+        onehot_ae_labels = []
+        for l in split_ae_labels:
+            if l == 0 :
+                onehot_ae_labels.append([1, 0, 0])
+            elif l == 1:
+                onehot_ae_labels.append([0, 1, 0])
+            elif l == 2:
+                onehot_ae_labels.append([0, 0, 1])
+            else:
+                raise ValueError
+
+
+        onehot_oe_labels = []
+        for l in split_oe_labels:
+            if l == 0 :
+                onehot_oe_labels.append([1, 0, 0])
+            elif l == 1:
+                onehot_oe_labels.append([0, 1, 0])
+            elif l == 2:
+                onehot_oe_labels.append([0, 0, 1])
+            else:
+                raise ValueError
+
+        onehot_sa_labels = []
+        sa_indicator = []
+        for l in split_sa_labels:
+            if l == 0:
+                onehot_sa_labels.append([0, 0, 0])
+                sa_indicator.append(1. if is_testing else 0.) # In testing, we don't know the location of aspect terms.
+            elif l == 1:
+                onehot_sa_labels.append([1, 0, 0])
+                sa_indicator.append(1.)
+            elif l == 2:
+                onehot_sa_labels.append([0, 1, 0])
+                sa_indicator.append(1.)
+            elif l == 3:
+                onehot_sa_labels.append([0, 0, 1])
+                sa_indicator.append(1.)
+            elif l == 4:
+                onehot_sa_labels.append([0, 0, 0])
+                sa_indicator.append(1. if is_testing else 0.) # Ensure there is no label leakage in testing.
+            else:
+                raise ValueError
+
+        aspect_y.append(onehot_ae_labels + [[0, 0, 0]] * (max_length - len(split_tokens)))
+        opinion_y.append(onehot_oe_labels + [[0, 0, 0]] * (max_length - len(split_tokens)))
+        sentiment_y.append(onehot_sa_labels + [[0, 0, 0]] * (max_length - len(split_tokens)))
+        position_m.append(position_matrix(len(split_tokens), max_length))
+        sentiment_mask.append(sa_indicator + [0.] * (max_length - len(split_tokens)))
+
+        'Add [CLS] and [SEP] for BERT'
+        bert_token_per = []
+        bert_segment_per = []
+        # bert_mask_per = []
+
+        bert_token_per.append("[CLS]")
+        bert_segment_per.append(0)
+
+        for i, token in enumerate(split_tokens):
+            bert_token_per.append(token)
+            bert_segment_per.append(0)
+
+        bert_token_per.append("[SEP]")
+        bert_segment_per.append(0)
+
+        bert_input_per = tokenizer.convert_tokens_to_ids(bert_token_per)
+
+        bert_mask_per = [1] * len(bert_input_per)
+
+        while len(bert_input_per) < max_length:
+            bert_input_per.append(0)
+            bert_mask_per.append(0)
+            bert_segment_per.append(0)
+
+        bert_input.append(bert_input_per)
+        bert_mask.append(bert_mask_per)
+        bert_segment.append(bert_segment_per)
+
+    return np.array(aspect_y), \
+           np.array(opinion_y), \
+           np.array(sentiment_y), \
+           np.array(source_mask), \
+           np.array(sentiment_mask), \
+           np.array(position_m), \
+           np.array(bert_input), \
+           np.array(bert_mask), \
+           np.array(bert_segment)
 
 def position_matrix(sen_len, max_len):
     a = np.zeros([max_len, max_len], dtype=np.float32)

@@ -7,16 +7,16 @@ import time
 import logging
 import tensorflow as tf
 from tensorflow.contrib import layers
+import bert_modeling
+from tqdm import tqdm
+import bert_optimization
 
 
 class MODEL(object):
 
-    def __init__(self, opt, word_embedding, domain_embedding, word_dict):
+    def __init__(self, opt):
         with tf.name_scope('parameters'):
             self.opt = opt
-            self.w2v = word_embedding
-            self.w2v_domain = domain_embedding
-            self.word_id_mapping = word_dict
             self.Winit = tf.random_uniform_initializer(minval=-0.01, maxval=0.01, seed=0.05)
 
             info = ''
@@ -38,12 +38,9 @@ class MODEL(object):
             self.logger.info('{:-^80}'.format('Parameters'))
             self.logger.info(info + '\n')
 
-        with tf.name_scope('embeddings'):
-            self.word_embedding = tf.Variable(self.w2v, dtype=tf.float32, name='word_embedding', trainable=False)
-            self.domain_embedding = tf.Variable(self.w2v_domain, dtype=tf.float32, name='domain_embedding', trainable=False)
+            self.bert_config = bert_modeling.BertConfig.from_json_file("./bert-large/bert_config.json")
 
         with tf.name_scope('inputs'):
-            self.x = tf.placeholder(tf.int32, [None, self.opt.max_sentence_len], name='x')
             self.aspect_y = tf.placeholder(tf.int32, [None, self.opt.max_sentence_len, self.opt.class_num], name='aspect_y')
             self.opinion_y = tf.placeholder(tf.int32, [None, self.opt.max_sentence_len, self.opt.class_num], name='opinion_y')
             self.sentiment_y = tf.placeholder(tf.int32, [None, self.opt.max_sentence_len, self.opt.class_num], name='sentiment_y')
@@ -53,18 +50,30 @@ class MODEL(object):
             self.keep_prob1 = tf.placeholder(tf.float32)
             self.keep_prob2 = tf.placeholder(tf.float32)
             self.is_training = tf.placeholder(tf.bool)
+            self.decay_step = tf.placeholder(tf.int32)
             self.drop_block1 = DropBlock2D(keep_prob=self.keep_prob2, block_size=3)
             self.drop_block2 = DropBlock2D(keep_prob=self.keep_prob2, block_size=3)
             self.drop_block3 = DropBlock2D(keep_prob=self.keep_prob2, block_size=3)
 
+            self.bert_input_ids = tf.placeholder(shape=[None, self.opt.max_sentence_len], dtype=tf.int32, name="input_ids")
+            self.bert_input_mask = tf.placeholder(shape=[None, self.opt.max_sentence_len], dtype=tf.int32, name="input_mask")
+            self.bert_segment_ids = tf.placeholder(shape=[None, self.opt.max_sentence_len], dtype=tf.int32, name="segment_ids")
 
-    def RACL(self, inputs, position_att):
+
+    def RACL_BERT(self, bert_input_ids, bert_input_mask, bert_segment_ids, position_att):
+        bert_model = bert_modeling.BertModel(
+            config=self.bert_config,
+            is_training=False,
+            input_ids=self.bert_input_ids,
+            input_mask=self.bert_input_mask,
+            token_type_ids=self.bert_segment_ids,
+            use_one_hot_embeddings=False
+        )
+        bert_out = bert_model.get_sequence_output()
+
+        # Since BERT acts as a shared trainable module by different tasks, we don't need the shared fully-connected layer.
+        inputs = tf.concat([bert_out[:, 1:, :], tf.expand_dims(bert_out[:, 0, :], 1)], 1)
         batch_size = tf.shape(inputs)[0]
-        inputs = tf.nn.dropout(inputs, keep_prob=self.keep_prob1)
-
-        # Shared Feature
-        inputs = tf.layers.conv1d(inputs, self.opt.emb_dim, 1, padding='SAME', activation=tf.nn.relu, name='inputs')
-        inputs = tf.nn.dropout(inputs, keep_prob=self.keep_prob1)
 
         mask256 = tf.tile(tf.expand_dims(self.word_mask, -1), [1, 1, self.opt.filter_num])
         mask70 = tf.tile(tf.expand_dims(self.word_mask, 1), [1, self.opt.max_sentence_len, 1])
@@ -146,12 +155,8 @@ class MODEL(object):
         return aspect_prob, opinion_prob, sentiment_prob
 
     def run(self):
-        batch_size = tf.shape(self.x)[0]
-        inputs_word = tf.nn.embedding_lookup(self.word_embedding, self.x)
-        inputs_domain = tf.nn.embedding_lookup(self.domain_embedding, self.x)
-        inputs = tf.concat([inputs_word, inputs_domain], -1)
-
-        aspect_prob, opinion_prob, sentiment_prob = self.RACL(inputs, self.position)
+        batch_size = tf.shape(self.word_mask)[0]
+        aspect_prob, opinion_prob, sentiment_prob = self.RACL_BERT(self.bert_input_ids, self.bert_input_mask, self.bert_segment_ids, self.position)
         aspect_value = tf.nn.softmax(aspect_prob, -1)
         opinion_value = tf.nn.softmax(opinion_prob, -1)
         senti_value = tf.nn.softmax(sentiment_prob, -1)
@@ -177,6 +182,8 @@ class MODEL(object):
 
         with tf.name_scope('loss'):
             tv = tf.trainable_variables()
+            for idx, v in enumerate(tv):
+                print('para {}/{}'.format(idx, len(tv)), v)
             total_para = count_parameter()
             self.logger.info('>>> total parameter: {}'.format(total_para))
 
@@ -187,11 +194,33 @@ class MODEL(object):
             sentiment_cost = tf.reduce_mean(
                 tf.nn.softmax_cross_entropy_with_logits(logits=sentiment_prob, labels=tf.cast(sentiment_label, tf.float32)))
 
-            cost = aspect_cost + opinion_cost + sentiment_cost + self.opt.reg_scale * reg_cost
+            cost = 2 * aspect_cost + opinion_cost + sentiment_cost + self.opt.reg_scale * reg_cost
 
         with tf.name_scope('train'):
             global_step = tf.Variable(0, name="tr_global_step", trainable=False)
-            optimizer = tf.train.AdamOptimizer(learning_rate=self.opt.learning_rate).minimize(cost, global_step=global_step)
+
+            bert_lr = 0.00001
+            mine_lr = self.opt.learning_rate
+            mine_lr = tf.train.exponential_decay(mine_lr, global_step, decay_steps=self.decay_step, decay_rate=0.95, staircase=True)
+
+            bert_vars = tv[:391]
+            mine_vars = tv[391:]
+
+            bert_opt = bert_optimization.AdamWeightDecayOptimizer(learning_rate=bert_lr)
+            mine_opt = tf.train.AdamOptimizer(mine_lr)
+
+            grads = tf.gradients(cost, bert_vars + mine_vars)
+            (grads, _) = tf.clip_by_global_norm(grads, clip_norm=1.0)
+
+            bert_grads = grads[:391]
+            mine_grads = grads[391:]
+
+            # mine_grads = tf.gradients(cost, mine_vars)
+
+            bert_op = bert_opt.apply_gradients(zip(bert_grads, bert_vars))
+            mine_op = mine_opt.apply_gradients(zip(mine_grads, mine_vars), global_step=global_step)
+
+            optimizer = tf.group(bert_op, mine_op)
 
         with tf.name_scope('predict'):
             true_ay = tf.reshape(aspect_label, [batch_size, self.opt.max_sentence_len, -1])
@@ -203,8 +232,18 @@ class MODEL(object):
             true_sy = tf.reshape(sentiment_label, [batch_size, self.opt.max_sentence_len, -1])
             pred_sy = tf.reshape(sentiment_prob, [batch_size, self.opt.max_sentence_len, -1])
 
-        saver = tf.train.Saver(max_to_keep=120)
-        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
+        with tf.name_scope('load-bert-large'):
+            # load pre-trained bert-large model
+            saver = tf.train.Saver(max_to_keep=120)
+            # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
+            init_checkpoint = "./bert-large/bert_model.ckpt"
+            use_tpu = False
+            tvars = tf.trainable_variables()
+            (assignment_map, initialized_variable_names) = bert_modeling.get_assignment_map_from_checkpoint(tvars, init_checkpoint)
+            # print(initialized_variable_names)
+            tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+
+
         with tf.Session() as sess:
             if self.opt.load == 0:
                 init = tf.global_variables_initializer()
@@ -213,9 +252,9 @@ class MODEL(object):
                 ckpt = tf.train.get_checkpoint_state('checkpoint/{}'.format(self.opt.task))
                 saver.restore(sess, ckpt.model_checkpoint_path)
 
-            train_sets = read_data(self.opt.train_path, self.word_id_mapping, self.opt.max_sentence_len)
-            dev_sets = read_data(self.opt.dev_path, self.word_id_mapping, self.opt.max_sentence_len)
-            test_sets = read_data(self.opt.test_path, self.word_id_mapping, self.opt.max_sentence_len, is_testing=True)
+            train_sets = read_bert_data(self.opt.train_path, self.opt.max_sentence_len)
+            dev_sets = read_bert_data(self.opt.dev_path, self.opt.max_sentence_len)
+            test_sets = read_bert_data(self.opt.test_path, self.opt.max_sentence_len, is_testing=True)
 
             aspect_f1_list = []
             opinion_f1_list = []
@@ -348,18 +387,22 @@ class MODEL(object):
         all_index = np.arange(length)
         if is_shuffle:
             np.random.shuffle(all_index)
-        for i in range(int(length / batch_size) + (1 if length % batch_size else 0)):
+        decay_step = int(length / batch_size) + (1 if length % batch_size else 0)
+        for i in tqdm(range(int(length / batch_size) + (1 if length % batch_size else 0))):
             index = all_index[i * batch_size:(i + 1) * batch_size]
             feed_dict = {
-                self.x: dataset[0][index],
-                self.aspect_y: dataset[1][index],
-                self.opinion_y: dataset[2][index],
-                self.sentiment_y: dataset[3][index],
-                self.word_mask: dataset[4][index],
-                self.senti_mask: dataset[5][index],
-                self.position: dataset[6][index],
+                self.aspect_y: dataset[0][index],
+                self.opinion_y: dataset[1][index],
+                self.sentiment_y: dataset[2][index],
+                self.word_mask: dataset[3][index],
+                self.senti_mask: dataset[4][index],
+                self.position: dataset[5][index],
+                self.bert_input_ids: dataset[6][index],
+                self.bert_input_mask: dataset[7][index],
+                self.bert_segment_ids: dataset[8][index],
                 self.keep_prob1: keep_prob1,
                 self.keep_prob2: keep_prob2,
                 self.is_training: is_training,
+                self.decay_step: decay_step
             }
             yield feed_dict, len(index)

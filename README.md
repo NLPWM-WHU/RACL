@@ -28,7 +28,6 @@ CUDA_VISIBLE_DEVICES=0 python train_racl.py --task res14 --load 0
  | round5 | 85\.68  | 85\.42  | 74\.56  | 70\.96   |
  | **AVG**    | **85\.37**  | **85\.32**  | **74\.46**  | **70\.67**   |
 
- We haven't yet integrated the BERT-based version at present. Since we create a separate project for RACL-BERT, it takes time to merge it to this repo. We may update it in late July. 
 
 ## 3. Checkpoints
  If you have problems in training RACL, you can also use the released pre-trained weights on the following links.
@@ -69,7 +68,27 @@ A separate set consists of four files:
 ## 6. Need Better Results?
 If you still need a better performance of RACL, you can increase the $hop_num$ argument in **train_racl.py**. Stacking layers to 5\~6 can introduce 1\~2% absolute improvements on ABSA-F1.
 
-## 7. Citation
+## 7. RACL-BERT (2020.09.16 update)
+We have updated the files for RACL-BERT. To run it, follow the steps below.
+
+* Upgrade the version of tensorflow-gpu to 1.12.0. (The lower version could deteriorate the performance.)
+* Download the [checkpoint](https://storage.googleapis.com/bert_models/2019_05_30/wwm_uncased_L-24_H-1024_A-16.zip) of BERT-Large, then unzip it in the folder **./bert-large/** (e.g., ./bert-large/bert_config.json).
+* Execute 
+```
+CUDA_VISIBLE_DEVICES=0 python train_racl_bert.py --task res14 --load 0
+```
+.
+
+
+ The results of RACL-BERT should be like this.
+
+ | Dataset | AE\-F1  | OE\-F1  | SC\-F1  | ABSA\-F1 |
+ |---------|---------|---------|---------|----------|
+ | Res14   | 87\.55  | 86\.21  | 81\.41  | 76\.25   |
+ | Lap14   | 82\.24  | 79\.19  | 75\.05  | 65\.67   |
+ | Res15   | 73\.19  | 75\.34  | 76\.84  | 65\.17   |
+
+## 8. Citation
 If you find our code and datasets useful, please cite our paper.
 
   
