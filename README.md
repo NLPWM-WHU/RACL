@@ -86,7 +86,7 @@ We have updated the files for RACL-BERT. To run it, follow the steps below.
  |---------|---------|---------|---------|----------|
  | Res14   | 87\.55  | 86\.21  | 81\.41  | 76\.25   |
  | Lap14   | 82\.24  | 79\.19  | 75\.05  | 65\.67   |
- | Res15   | 73\.19  | 75\.34  | 76\.84  | 65\.17   |
+ | Res15   | 74\.20  | 74\.58  | 75\.65  | 66\.07   |
 
 ## 8. Citation
 If you find our code and datasets useful, please cite our paper.
