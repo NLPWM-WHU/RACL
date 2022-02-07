@@ -1,3 +1,14 @@
+# 2022/02/07 Update
+公开源码是为了促进领域内研究发展，而不是作为被抄袭灌水的原料。
+最近忙于撰写博士毕业论文，发现已有同行将本文像素级翻译变换，发表于知网上，造成严重负面影响。
+知网链接：
+“[徐福,黄贤英,蒋兴渝,彭竞瑶.用于方面提取的多元关系协作学习模型.计算机应用研究,2021,38(08):2328-2333.](https://kns.cnki.net/kcms/detail/detail.aspx?dbcode=CJFD&dbname=CJFDLAST2021&filename=JSYJ202108014&uniplatform=NZKPT&v=OQ3op_X26Xgg_KOi2F3qqioDlJw74W-MY1JRuGVW4kO0yey2j6A-7afF0R36fq5U)”
+
+本人保留一切追究责任的权利。
+
+
+
+
 # RACL
  Code and datasets of our paper "[Relation-Aware Collaborative Learning for Unified Aspect-Based Sentiment Analysis](https://www.aclweb.org/anthology/2020.acl-main.340/)" accepted by ACL 2020.
 
